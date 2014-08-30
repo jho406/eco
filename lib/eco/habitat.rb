@@ -16,7 +16,6 @@ module Eco
     def set_stock
       @food_stock = 0
       @water_stock = 0
-      # replenish #todo: be sure to call this one tmie in passage of time
     end
 
     def default_opts
@@ -47,13 +46,13 @@ module Eco
     end
 
     def age!
-      # replenish_food
-      # set temperature
-      # feed_inhabitants
-      # sexy_time
+      replenish_food
+      set temperature
+      feed_inhabitants
+      sexy_time
       # give_birth #carefull....
-      # age_inhabitants
-      # refresh_stats
+      age_inhabitants
+      refresh_stats
     end
 
     def set_temperature
@@ -74,7 +73,7 @@ module Eco
     def sexy_time
       sexes = @inhabitants.group_by(&:sex)
       ovulating = sexes[:f].group_by(&:ovulating)[true]
-      num_of_matches = Math.min(ovulating.size, sexes[:m].size)
+      num_of_matches = [ovulating.size, sexes[:m].size].min
 
       impregnable = ovulating.sample(num_of_matches)
 

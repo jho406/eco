@@ -11,49 +11,8 @@ describe Eco::Habitat do
     end
   end
 
-  class MockSpecies
+  class MockSpecies < Eco::Species
     attr_accessor :age, :habitat, :cause_of_death, :sex, :attributes, :months_without_food, :months_without_water
-
-    def initialize(attributes={})
-      @attributes = attributes
-      @age = 0
-      @months_without_food = 0
-      @months_without_water = 0
-      @months_in_gestation = 0
-      @sex = attributes[:sex]
-    end
-
-    def age!
-      @age += 1
-    end
-
-    def impregnate
-      @pregnant = true
-    end
-
-    def pregnant?
-      !!@pregnant
-    end
-
-    def consume_food(habitat)
-      portion = attributes[:monthly_food_consumption]
-
-      if habitat.provision_food(portion)
-        @months_without_food = 0
-      else
-        @months_without_food +=1
-      end
-    end
-
-    def consume_water(habitat)
-      portion = attributes[:monthly_water_consumption]
-
-      if habitat.provision_water(portion)
-        @months_without_water = 0
-      else
-        @months_without_water +=1
-      end
-    end
   end
 
   let(:pot) { MockPot.new }
@@ -228,19 +187,24 @@ describe Eco::Habitat do
     end
   end
 
-  # describe '#sexy_time' do
-  #   let(:male) { MockSpecies.new(sex: :m) }
-  #   let(:female) { MockSpecies.new(sex: :f) }
-  #   let(:other_female) { MockSpecies.new(sex: :f) }
+  describe '#sexy_time' do
+    let(:male) { MockSpecies.new(sex: :m, minimum_breeding_age: 0, maximum_breeding_age: 10) }
+    let(:female) { MockSpecies.new(sex: :f, minimum_breeding_age: 0, maximum_breeding_age: 10) }
+    let(:other_female) { MockSpecies.new(sex: :f, minimum_breeding_age: 0, maximum_breeding_age: 10) }
+    let(:out_of_range_female) { MockSpecies.new(sex: :f, minimum_breeding_age: 9, maximum_breeding_age: 10) }
 
-  #   before do
-  #     habitat.add_inhabitant(male)
-  #     habitat.add_inhabitant(female)
-  #     habitat.add_inhabitant(other)
-  #   end
+    before do
+      habitat.add_inhabitant(male)
+      habitat.add_inhabitant(female)
+      habitat.add_inhabitant(other_female)
+      habitat.add_inhabitant(out_of_range_female)
+    end
 
-  #   it 'impregnate the pairable females' do
-
-  #   end
-  # end
+    it 'impregnates the pairable females' do
+      habitat.sexy_time
+      (female.pregnant? || other_female.pregnant?).must_equal true
+      (female.pregnant? && other_female.pregnant?).must_equal false
+      out_of_range_female.pregnant?.must_equal false
+    end
+  end
 end
