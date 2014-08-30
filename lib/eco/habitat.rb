@@ -13,23 +13,6 @@ module Eco
       set_stock
     end
 
-    def set_stock
-      @food_stock = 0
-      @water_stock = 0
-    end
-
-    def default_opts
-      {
-        monthly_food: 10,
-        monthly_water: 10,
-        summer: 50,
-        spring: 50,
-        fall: 50,
-        winter: 50,
-        inhabitants: []
-      }
-    end
-
     def add_inhabitant(specie)
       @inhabitants.push(specie)
       @passage_of_time.add_inhabitant(specie)
@@ -70,15 +53,24 @@ module Eco
       end
     end
 
+    def healthy?
+      food_appetite = @inhabitants.size * @inhabitants.first.monthly_food
+      water_appetite = @inhabitants.size * @inhabitants.first.monthly_water
+
+      @food_stock >= food_appetite && @water_stock >= water_appetite
+    end
+
     def sexy_time
       sexes = @inhabitants.group_by(&:sex)
       ovulating = sexes[:f].group_by(&:ovulating)[true]
       num_of_matches = [ovulating.size, sexes[:m].size].min
-
       impregnable = ovulating.sample(num_of_matches)
 
+      chance_of_breeding = healthy? ? 100 : 0.5
+
       impregnable.each do |ibt|
-        ibt.impregnate
+        willing = Utils::chance(chance_of_breeding)
+        ibt.impregnate if willing
       end
     end
 
@@ -104,6 +96,25 @@ module Eco
     def replenish
       @food_stock += options[:monthly_food]
       @water_stock += options[:monthly_water]
+    end
+
+    private
+
+    def set_stock
+      @food_stock = 0
+      @water_stock = 0
+    end
+
+    def default_opts
+      {
+        monthly_food: 10,
+        monthly_water: 10,
+        summer: 50,
+        spring: 50,
+        fall: 50,
+        winter: 50,
+        inhabitants: []
+      }
     end
   end
 end

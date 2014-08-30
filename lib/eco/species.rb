@@ -1,6 +1,6 @@
 module Eco
   class Species
-    attr_reader :attributes, :months_without_food, :months_without_water, :gestating, :ovulating
+    attr_reader :age, :attributes, :months_without_food, :months_without_water, :gestating, :ovulating
 
     def initialize(attributes={})
       @attributes = attributes
@@ -9,6 +9,11 @@ module Eco
       @months_without_water = 0
       @months_in_gestation = 0
       @sex = attributes[:sex]
+    end
+
+    def method_missing(m, *args, &block)
+      return super if !attributes.has_key?(m.to_sym)
+      attributes[m.to_sym]
     end
 
     def maximum_breeding_age_in_months

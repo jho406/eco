@@ -1,6 +1,4 @@
 require 'test_helper'
-require 'ostruct'
-require 'debugger'
 
 describe Eco::Habitat do
   class MockPot
@@ -12,7 +10,7 @@ describe Eco::Habitat do
   end
 
   class MockSpecies < Eco::Species
-    attr_accessor :age, :habitat, :cause_of_death, :sex, :attributes, :months_without_food, :months_without_water
+    attr_accessor :cause_of_death
   end
 
   let(:pot) { MockPot.new }
@@ -188,10 +186,10 @@ describe Eco::Habitat do
   end
 
   describe '#sexy_time' do
-    let(:male) { MockSpecies.new(sex: :m, minimum_breeding_age: 0, maximum_breeding_age: 10) }
-    let(:female) { MockSpecies.new(sex: :f, minimum_breeding_age: 0, maximum_breeding_age: 10) }
-    let(:other_female) { MockSpecies.new(sex: :f, minimum_breeding_age: 0, maximum_breeding_age: 10) }
-    let(:out_of_range_female) { MockSpecies.new(sex: :f, minimum_breeding_age: 9, maximum_breeding_age: 10) }
+    let(:male) { MockSpecies.new(sex: :m, minimum_breeding_age: 0, maximum_breeding_age: 10, monthly_food: 0, monthly_water: 0) }
+    let(:female) { MockSpecies.new(sex: :f, minimum_breeding_age: 0, maximum_breeding_age: 10, monthly_food: 0, monthly_water: 0) }
+    let(:other_female) { MockSpecies.new(sex: :f, minimum_breeding_age: 0, maximum_breeding_age: 10, monthly_food: 0, monthly_water: 0) }
+    let(:out_of_range_female) { MockSpecies.new(sex: :f, minimum_breeding_age: 9, maximum_breeding_age: 10, monthly_food: 0, monthly_water: 0) }
 
     before do
       habitat.add_inhabitant(male)
@@ -206,5 +204,35 @@ describe Eco::Habitat do
       (female.pregnant? && other_female.pregnant?).must_equal false
       out_of_range_female.pregnant?.must_equal false
     end
+  end
+
+  describe '#healthy' do
+    let(:habitat) { Eco::Habitat.new(pot, monthly_food: 10, monthly_water: 10 ) }
+
+    describe 'when there is enough food and water to go around' do
+      before do
+        habitat.replenish
+        habitat.add_inhabitant(MockSpecies.new(monthly_water: 5, monthly_food: 5))
+        habitat.add_inhabitant(MockSpecies.new(monthly_water: 5, monthly_food: 5))
+      end
+
+      it 'returns true' do
+        habitat.healthy?.must_equal true
+      end
+    end
+
+    describe 'when there is not enough food to go around' do
+      before do
+        habitat.replenish
+        habitat.add_inhabitant(MockSpecies.new(monthly_water: 5, monthly_food: 5))
+        habitat.add_inhabitant(MockSpecies.new(monthly_water: 5, monthly_food: 5))
+        habitat.add_inhabitant(MockSpecies.new(monthly_water: 5, monthly_food: 5))
+      end
+
+      it 'returns false' do
+        habitat.healthy?.must_equal false
+      end
+    end
+
   end
 end
