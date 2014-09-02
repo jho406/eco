@@ -1,154 +1,126 @@
 require 'test_helper'
+require 'set'
 
 describe Eco::PassageOfTime do
 
-  class MockHabitat
-    attr_reader :passage_of_time, :inhabitants, :has_aged
-    attr_accessor :population
+  let(:specie_attrs) do
+    {
+      name: 'bear',
+      monthly_food_consumption: 0,
+      monthly_water_consumption: 0,
+      life_span: 20,
+      minimum_breeding_age: 0,
+      maximum_breeding_age: 10,
+      gestation_period: 1,
+      minimum_temperature: 0,
+      maximum_temperature: 10
+    }
+  end
 
-    def initialize(passage_of_time, inhabitants = [])
-      @passage_of_time = passage_of_time
-      @inhabitants = inhabitants
-      @has_aged = 0
-      @population = 0
-    end
+  let(:habitat_options) do
+    {
+      name: 'plains',
+      monthly_food: 10,
+      monthly_water: 10,
+      summer: 0,
+      spring: 0,
+      fall: 0,
+      winter: 0,
+    }
+  end
 
-    def add_inhabitant(hab)
-      @inhabitants.push(hab)
-    end
+  let(:pot) { Eco::PassageOfTime.new(species_options: specie_attrs, habitat_options: habitat_options) }
 
-    def age
-      @has_aged = true
+  describe '#initialize' do
+    it 'creates adam and eve in the new habitat' do
+      pot.all_inhabitants.size.must_equal 2
+      pot.all_inhabitants.map(&:sex).to_set.must_equal [:m, :f].to_set
     end
   end
 
-  class MockSpecie
-    attr_accessor :sex
-
-    def initialize(args)
-      @sex = args[:sex]
-    end
-  end
-
-  describe '#pct_starved' do
-    let(:pot) { Eco::PassageOfTime.new(MockSpecie, MockHabitat) }
-
-    before do
-      4.times do
-        pot.add_inhabitant(Object.new)
-      end
-
-      pot.add_inhabitant(Object.new, :starved)
-      pot.add_inhabitant(Object.new, :starved)
+  describe '#age!' do
+    it 'ages the habitat' do
+      pot.snapshots.last.age.must_equal 0
+      pot.age!
+      pot.snapshots.last.age.must_equal 1
     end
 
-    it 'returns the percent of inhabitant who starved to death' do
-      pot.pct_starved.must_equal 0.5
-    end
-  end
-
-  describe '#pct_aged' do
-    let(:pot) { Eco::PassageOfTime.new(MockSpecie, MockHabitat) }
-
-    before do
-      4.times do
-        pot.add_inhabitant(Object.new)
-      end
-
-      pot.add_inhabitant(Object.new, :aged)
-      pot.add_inhabitant(Object.new, :aged)
-    end
-
-    it 'returns the percent of inhabitant who aged to death' do
-      pot.pct_aged.must_equal 0.5
-    end
-  end
-
- describe '#pct_frozen' do
-    let(:pot) { Eco::PassageOfTime.new(MockSpecie, MockHabitat) }
-
-    before do
-      4.times do
-        pot.add_inhabitant(Object.new)
-      end
-
-      pot.add_inhabitant(Object.new, :frozen)
-      pot.add_inhabitant(Object.new, :frozen)
-    end
-
-    it 'returns the percent of inhabitant who froze to death' do
-      pot.pct_frozen.must_equal 0.5
-    end
-  end
-
- describe '#pct_burnt' do
-    let(:pot) { Eco::PassageOfTime.new(MockSpecie, MockHabitat) }
-
-    before do
-      4.times do
-        pot.add_inhabitant(Object.new)
-      end
-
-      pot.add_inhabitant(Object.new, :burnt)
-      pot.add_inhabitant(Object.new, :burnt)
-    end
-
-    it 'returns the percent of inhabitant who burned to death' do
-      pot.pct_burnt.must_equal 0.5
-    end
-  end
-
-  describe '#max_population' do
-    let(:pot) { Eco::PassageOfTime.new(MockSpecie, MockHabitat) }
-
-    before do
-      pot.age
-      pot.snapshots[0].population = 2
-      pot.snapshots[1].population = 4
-    end
-
-    it 'retrieves the max population of the snapshots' do
-      pot.max_population.must_equal 4
-    end
-  end
-
-  describe '#average_population' do
-    let(:pot) { Eco::PassageOfTime.new(MockSpecie, MockHabitat) }
-
-    before do
-      pot.age
-      pot.snapshots[0].population = 2
-      pot.snapshots[1].population = 4
-    end
-
-    it 'averages the habitat population' do
-      pot.average_population.must_equal 3.0
-    end
-  end
-
-  describe '#add_inhabitant' do
-    let(:pot) { Eco::PassageOfTime.new(MockSpecie, MockHabitat) }
-    let(:inhabitant) { Object.new }
-
-    it 'should add to its inhabitant pool' do
-      pot.add_inhabitant(inhabitant)
-      pot.all_inhabitants.first.must_equal inhabitant
-    end
-  end
-
-  describe '#age' do
-    let(:pot) { Eco::PassageOfTime.new(MockSpecie, MockHabitat) }
-
-    before do
-      pot.age
-    end
-
-    it 'should age the habitat' do
-      pot.snapshots.last.has_aged.must_equal true
-    end
-
-    it 'should add a new snapshot' do
+    it 'creates a new cloned snapshot' do
+      pot.snapshots.size.must_equal 1
+      pot.age!
       pot.snapshots.size.must_equal 2
+    end
+  end
+
+  describe '#stats' do
+    let(:pot) do
+      Class.new(Eco::PassageOfTime) do
+        attr_accessor :snapshots, :all_inhabitants
+
+        def all_inhabitants
+          @all_inhabitants
+        end
+      end.new
+    end
+
+    it 'returns the mortality rate' do
+      pot.all_inhabitants = [
+         OpenStruct.new(dead?: true),
+         OpenStruct.new(dead?: true),
+         OpenStruct.new(dead?: false)
+      ]
+
+      pot.stats[:mortality_rate].must_equal (2.to_f/3)
+    end
+
+    it 'returns the hot weather death rate' do
+      pot.all_inhabitants = [
+         OpenStruct.new(dead?: true, cause_of_death: :hot_weather),
+         OpenStruct.new(dead?: true, cause_of_death: :hot_weather),
+         OpenStruct.new(dead?: false)
+      ]
+
+      pot.stats[:hot_weather_death_rate].must_equal (2.to_f/3)
+    end
+
+    it 'returns the cold weather death rate' do
+      pot.all_inhabitants = [
+         OpenStruct.new(dead?: true, cause_of_death: :cold_weather),
+         OpenStruct.new(dead?: true, cause_of_death: :cold_weather),
+         OpenStruct.new(dead?: false)
+      ]
+
+      pot.stats[:cold_weather_death_rate].must_equal (2.to_f/3)
+    end
+
+    it 'returns the old age death rate' do
+      pot.all_inhabitants = [
+         OpenStruct.new(dead?: true, cause_of_death: :old_age),
+         OpenStruct.new(dead?: true, cause_of_death: :old_age),
+         OpenStruct.new(dead?: false)
+      ]
+
+      pot.stats[:old_age_death_rate].must_equal (2.to_f/3)
+    end
+
+    it 'returns the starvation death rate' do
+      pot.all_inhabitants = [
+         OpenStruct.new(dead?: true, cause_of_death: :starvation),
+         OpenStruct.new(dead?: true, cause_of_death: :starvation),
+         OpenStruct.new(dead?: false)
+      ]
+
+      pot.stats[:starvation_death_rate].must_equal (2.to_f/3)
+    end
+
+    it 'returns the thirst death rate' do
+      pot.all_inhabitants = [
+         OpenStruct.new(dead?: true, cause_of_death: :thirst),
+         OpenStruct.new(dead?: true, cause_of_death: :thirst),
+         OpenStruct.new(dead?: false)
+      ]
+
+      pot.stats[:thirst_death_rate].must_equal (2.to_f/3)
     end
   end
 end

@@ -1,54 +1,91 @@
-require 'debugger'
 module Eco
   class PassageOfTime
 
-    attr_reader :snapshots
+    attr_reader :snapshots, :current_month
     attr_reader :all_inhabitants, :frozen_inhabitants,
       :burnt_inhabitants, :aged_inhabitants, :starved_inhabitants
 
-    def initialize(species_klass, habitat_klass = Habitat)
-      @all_inhabitants = []
+    def initialize(opts={})
+      @species_klass = opts.fetch(:species_klass, Species)
+      @habitat_klass = opts.fetch(:habitat_klass, Habitat)
+      @current_month = 0
 
-      habitat = habitat_klass.new(self)
-      habitat.add_inhabitant(species_klass.new(sex: :m))
-      habitat.add_inhabitant(species_klass.new(sex: :f))
-      habitat.refresh_stats
+      specie_attrs = opts.fetch(:species_options, {})
+      habitat_attrs = opts.fetch(:habitat_options, {})
+
+      habitat = @habitat_klass.new(self, habitat_attrs)
       @snapshots = [habitat]
+
+      adam = @species_klass.new(specie_attrs.merge(sex: :m))
+      eve = @species_klass.new(specie_attrs.merge(sex: :f))
+
+      [adam, eve].each{ |spe| habitat.add_inhabitant(spe) }
+
+      habitat.refresh_stats
     end
 
-    def age
-      snapshot = snapshots.last.class.new(self, all_inhabitants)
-      snapshot.age
+    def all_inhabitants
+      snapshots.last.inhabitants || []
+    end
+
+    def age!
+      snapshot = snapshots.last.clone
+      snapshot.age!
       @snapshots.push(snapshot)
     end
 
-    def average_population
-      total = snapshots.inject(0) do |memo, obj|
-        memo += obj.population
+    def stats
+      cause_of_deaths = extract_cause_of_death
+
+      {
+        average_population: extract_average_population,
+        max_population: extract_max_population,
+        mortality_rate: extract_mortality_rate,
+        hot_weather_death_rate: cause_of_deaths[:hot_weather] / all_inhabitants.size,
+        cold_weather_death_rate: cause_of_deaths[:cold_weather] / all_inhabitants.size,
+        starvation_death_rate: cause_of_deaths[:starvation] / all_inhabitants.size,
+        thirst_death_rate: cause_of_deaths[:thirst] / all_inhabitants.size,
+        old_age_death_rate: cause_of_deaths[:old_age] / all_inhabitants.size
+      }
+    end
+
+    private
+
+      def extract_average_population
+        total = snapshots.inject(0) do |memo, snp|
+          memo += snp.stats[:population]
+        end
+
+        total.to_f / snapshots.size
       end
 
-      total.to_f / snapshots.size
-    end
+      def extract_max_population
+        snapshots.map do |snp|
+          snp.stats[:population]
+        end.max
+      end
 
-    def max_population
-      snapshots.max_by(&:population).population
-    end
+      def extract_mortality_rate
+        total = all_inhabitants.select do |obj|
+          obj.dead?
+        end.size
 
-    def add_inhabitant(ibt, type=:all)
-      instance_eval("@#{type}_inhabitants.push(ibt)")
-    end
-
-    def pct_starved
-    end
+        total.to_f / all_inhabitants.size
+      end
 
 
-    def pct_aged
-    end
+      def extract_cause_of_death
+        causes = all_inhabitants.group_by do |obj|
+          obj.cause_of_death
+        end
 
-    def pct_frozen
-    end
-
-    def pct_burnt
-    end
+        {
+          hot_weather: causes.fetch(:hot_weather, []).size.to_f,
+          cold_weather: causes.fetch(:cold_weather, []).size.to_f,
+          old_age: causes.fetch(:old_age, []).size.to_f,
+          starvation: causes.fetch(:starvation, []).size.to_f,
+          thirst: causes.fetch(:thirst, []).size.to_f
+        }
+      end
   end
 end
