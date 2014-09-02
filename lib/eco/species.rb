@@ -55,6 +55,7 @@ module Eco
       endure_hunger
 
       impregnate
+      unmatch
       gestate
       give_birth
     end
@@ -65,6 +66,10 @@ module Eco
 
     def legal_for_breeding?
       age >= minimum_breeding_age && age <= maximum_breeding_age
+    end
+
+    def breedable?
+      !!(!pregnant? && legal_for_breeding? && !dead?)
     end
 
     def pregnant?
@@ -154,7 +159,6 @@ module Eco
         baby_sex = Utils::chance(50, success: :m, fail: :f)
         baby = self.class.new(attributes.merge(sex: baby_sex))
         habitat.add_inhabitant(baby)
-        unmatch
       end
 
       def gestate
