@@ -25,14 +25,6 @@ describe Eco::Habitat do
   let(:attrs) { { monthly_food: 5, monthly_water: 5, winter: 0 } }
   let(:habitat) { Eco::Habitat.new(attrs) }
 
-  describe '#clone' do
-    it 'also shallow copies its inhabitants' do
-      clone = habitat.clone
-      habitat.inhabitants.must_equal clone.inhabitants
-      habitat.inhabitants.object_id.wont_equal clone.inhabitants.object_id
-    end
-  end
-
   describe '#add_inhabitant' do
     it 'adds a new inhabitant' do
       habitat.add_inhabitant(specie)
@@ -122,6 +114,15 @@ describe Eco::Habitat do
       it 'returns false' do
         habitat.healthy?.must_equal false
       end
+    end
+  end
+
+  describe '#current_month' do
+    let(:habitat) { Eco::Habitat.new(attrs.merge({ winter: 50, monthly_water: 15, monthly_food: 10 })) }
+
+    it 'gets the current month relative to the age' do
+      habitat.age!
+      habitat.current_month.must_equal (habitat.age % 12)
     end
   end
 

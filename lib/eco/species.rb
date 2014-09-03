@@ -49,7 +49,7 @@ module Eco
     end
 
     def dead?
-      @dead
+      !!cause_of_death
     end
 
     def legal_for_breeding?
@@ -92,36 +92,26 @@ module Eco
 
       def endure_cold
         return if habitat.temperature > minimum_temperature
-
-        @dead = true
         @cause_of_death = :cold_weather
       end
 
       def endure_hot
         return if habitat.temperature < maximum_temperature
-
-        @dead = true
         @cause_of_death = :hot_weather
       end
 
       def endure_old_age
         return if age <= life_span
-
-        @dead = true
         @cause_of_death = :old_age
       end
 
       def endure_thirst
         return unless @months_without_water > 1
-
-        @dead = true
         @cause_of_death = :thirst
       end
 
       def endure_hunger
         return unless @months_without_food > 3
-
-        @dead = true
         @cause_of_death = :starvation
       end
 

@@ -2,9 +2,8 @@ module Eco
   class Habitat
     MONTH_SEASONS = [:winter, :winter, :spring, :spring, :spring, :summer, :summer, :summer, :fall, :fall, :fall, :winter]
 
-    attr_reader :inhabitants, :temperature, :options
-    attr_reader :food_stock, :water_stock
-    attr_reader :age, :stats
+    attr_reader :inhabitants, :temperature, :options,
+      :food_stock, :water_stock, :age, :stats
 
     def initialize(opts = {})
       @options = default_opts.merge(opts)
@@ -44,16 +43,16 @@ module Eco
     end
 
     def age!
-      @age += 1
       replenish
       set_temperature
 
       match_for_breeding
       age_inhabitants
+      @age += 1
     end
 
     def current_month
-      @age%12
+      @age % 12
     end
 
     def refresh_stats
@@ -128,11 +127,6 @@ module Eco
           winter: 50,
           inhabitants: []
         }
-      end
-
-      def initialize_copy(orig)
-       super
-       @inhabitants = orig.inhabitants.clone
       end
   end
 end

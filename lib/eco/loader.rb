@@ -16,7 +16,7 @@ module Eco
       load_simulations(model)
     end
 
-      private
+    private
 
       def extract
         @species = @yaml['species']

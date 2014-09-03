@@ -23,9 +23,5 @@ Species: #{ stats[:specie_name] }
 stat
 
     end
-
-    def self.cli_run(args)
-      args[0]
-    end
   end
 end
