@@ -1,4 +1,23 @@
-interview-test-ecosystem
+## Instructions
+
+Check out the available commands:
+
+```ruby
+rake -T
+```
+
+Comes with minitest specs:
+
+```ruby
+rake test
+```
+
+simulate:
+
+```ruby
+rake simulate
+```
+
 ========================
 
 	Task: create an application that imports the provided YAML config file (which contains Control, Species and Habitat parameters) and then simulates the passage of time for each species in each habitat.
@@ -13,7 +32,7 @@ interview-test-ecosystem
 					x% age
 					x% cold_weather
 					x% hot_weather
-			
+
 	Rules/Notes:
 		Passage of Time:
 			- The passage of time should be in months.  Animals only eat/drink/mate/die at 1 month intervals & habitats only refresh their food/water/temperature at 1 month intervals.
@@ -25,7 +44,7 @@ interview-test-ecosystem
 			- Assume animals are not monogamous
 			- There is no need to keep track of parent/child relationships
 			Death (causes):
-				- Starvation: 3 consecutive full months without food 
+				- Starvation: 3 consecutive full months without food
 				- Thirst: 1 full month without food
 				- Old Age: age > life_span
 				- Extreme Temperature:  1 full month above or below threshold for species
