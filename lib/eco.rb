@@ -1,3 +1,4 @@
+require 'eco/simulator'
 require 'eco/habitat'
 require 'eco/species'
 require 'eco/utils'
