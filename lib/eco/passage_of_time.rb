@@ -1,7 +1,7 @@
 module Eco
   class PassageOfTime
 
-    attr_reader :snapshots, :current_month, :stats
+    attr_reader :snapshots, :current_month, :stats, :age
     attr_reader :all_inhabitants, :frozen_inhabitants,
       :burnt_inhabitants, :aged_inhabitants, :starved_inhabitants
 
@@ -9,6 +9,7 @@ module Eco
       @species_klass = opts.fetch(:species_klass, Species)
       @habitat_klass = opts.fetch(:habitat_klass, Habitat)
       @current_month = 0
+      @age = 0
 
       specie_attrs = opts.fetch(:species_options, {})
       habitat_attrs = opts.fetch(:habitat_options, {})
@@ -27,6 +28,7 @@ module Eco
 
     def age!
       @age +=1
+      @current_month = @age%12
       snapshot = snapshots.last.clone
       snapshot.age!
       @snapshots.push(snapshot)
