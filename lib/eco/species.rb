@@ -3,7 +3,7 @@ module Eco
     LIFE_FINDS_A_WAY = 0.5
 
     attr_reader :age, :matched, :attributes, :months_without_food,
-      :months_without_water, :months_in_gestation, :ovulating, :cause_of_death
+      :months_without_water, :months_in_gestation, :cause_of_death
     attr :habitat
 
     def initialize(attributes={})
