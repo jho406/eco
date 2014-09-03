@@ -63,64 +63,81 @@ describe Eco::PassageOfTime do
       end.new
     end
 
-    it 'returns the mortality rate' do
+    it 'returns the number of population(alive)' do
       pot.all_inhabitants = [
-         OpenStruct.new(dead?: true),
-         OpenStruct.new(dead?: true),
-         OpenStruct.new(dead?: false)
+         OpenStruct.new(dead?: true, cause_of_death: :hot_weather),
+         OpenStruct.new(dead?: true, cause_of_death: :hot_weather),
+         OpenStruct.new(dead?: false, cause_of_death: nil)
       ]
 
-      pot.stats[:mortality_rate].must_equal (2.to_f/3)
+      pot.refresh_stats
+      pot.stats[:population].must_equal 1
     end
 
-    it 'returns the hot weather death rate' do
+    it 'returns the number of dead' do
       pot.all_inhabitants = [
          OpenStruct.new(dead?: true, cause_of_death: :hot_weather),
          OpenStruct.new(dead?: true, cause_of_death: :hot_weather),
          OpenStruct.new(dead?: false)
       ]
 
-      pot.stats[:hot_weather_death_rate].must_equal (2.to_f/3)
+      pot.refresh_stats
+      pot.stats[:dead].must_equal 2
     end
 
-    it 'returns the cold weather death rate' do
+    it 'returns the hot weather death' do
+      pot.all_inhabitants = [
+         OpenStruct.new(dead?: true, cause_of_death: :hot_weather),
+         OpenStruct.new(dead?: true, cause_of_death: :hot_weather),
+         OpenStruct.new(dead?: false)
+      ]
+
+      pot.refresh_stats
+      pot.stats[:dead_by_hot_weather].must_equal 2
+    end
+
+    it 'returns the cold weather death' do
       pot.all_inhabitants = [
          OpenStruct.new(dead?: true, cause_of_death: :cold_weather),
          OpenStruct.new(dead?: true, cause_of_death: :cold_weather),
          OpenStruct.new(dead?: false)
       ]
 
-      pot.stats[:cold_weather_death_rate].must_equal (2.to_f/3)
+      pot.refresh_stats
+      pot.stats[:dead_by_cold_weather].must_equal 2
     end
 
-    it 'returns the old age death rate' do
+    it 'returns the old age death' do
       pot.all_inhabitants = [
          OpenStruct.new(dead?: true, cause_of_death: :old_age),
          OpenStruct.new(dead?: true, cause_of_death: :old_age),
          OpenStruct.new(dead?: false)
       ]
 
-      pot.stats[:old_age_death_rate].must_equal (2.to_f/3)
+      pot.refresh_stats
+      pot.stats[:dead_by_old_age].must_equal 2
     end
 
-    it 'returns the starvation death rate' do
+    it 'returns the starvation death' do
       pot.all_inhabitants = [
          OpenStruct.new(dead?: true, cause_of_death: :starvation),
          OpenStruct.new(dead?: true, cause_of_death: :starvation),
          OpenStruct.new(dead?: false)
       ]
 
-      pot.stats[:starvation_death_rate].must_equal (2.to_f/3)
+      pot.refresh_stats
+      pot.stats[:dead_by_starvation].must_equal 2
     end
 
-    it 'returns the thirst death rate' do
+    it 'returns the thirst death' do
       pot.all_inhabitants = [
          OpenStruct.new(dead?: true, cause_of_death: :thirst),
          OpenStruct.new(dead?: true, cause_of_death: :thirst),
          OpenStruct.new(dead?: false)
       ]
 
-      pot.stats[:thirst_death_rate].must_equal (2.to_f/3)
+      pot.refresh_stats
+      pot.stats[:dead_by_thirst].must_equal 2
     end
   end
 end

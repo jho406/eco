@@ -16,18 +16,6 @@ module Eco
       @dead = false
     end
 
-    # def maximum_breeding_age_in_months
-    #   maximum_breeding_age * 12
-    # end
-
-    # def life_span_in_months
-    #   life_span * 12
-    # end
-
-    # def minimum_breeding_age_in_months
-    #   maximum_breeding_age * 12
-    # end
-
     def matched?
       @matched
     end

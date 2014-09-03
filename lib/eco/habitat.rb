@@ -12,30 +12,13 @@ module Eco
       @passage_of_time = passage_of_time
 
       @age = 0
+      @stats = {}
       set_stock
-      @stats = {
-        population: 0,
-        starved_to_death: 0,
-        aged_to_death: 0,
-        froze_to_death: 0,
-        burned_to_death: 0
-      }
       set_temperature
     end
 
     def add_inhabitant(specie)
       @inhabitants.push(specie)
-    end
-
-    def refresh_stats
-      stats = @inhabitants.group_by(&:cause_of_death)
-      @stats = {
-        population: stats.fetch(nil, []).size,
-        starved_to_death: stats.fetch(:starvation, []).size,
-        aged_to_death: stats.fetch(:old_age, []).size,
-        froze_to_death: stats.fetch(:cold_weather, []).size,
-        burned_to_death: stats.fetch(:hot_weather, []).size
-      }
     end
 
     def replenish
@@ -69,10 +52,40 @@ module Eco
 
       match_for_breeding
       age_inhabitants
-      refresh_stats
+    end
+
+    def refresh_stats
+      cause_of_deaths = extract_cause_of_death
+      alive = cause_of_deaths.fetch(:none, 0)
+      dead = cause_of_deaths.values.inject(:+) - alive
+
+      @stats = {
+        population: alive,
+        dead: dead,
+        dead_by_hot_weather: cause_of_deaths[:hot_weather],
+        dead_by_cold_weather: cause_of_deaths[:cold_weather],
+        dead_by_starvation: cause_of_deaths[:starvation],
+        dead_by_thirst: cause_of_deaths[:thirst],
+        dead_by_old_age: cause_of_deaths[:old_age]
+      }
     end
 
     private
+
+      def extract_cause_of_death
+        causes = inhabitants.group_by do |iht|
+          iht.cause_of_death
+        end
+
+        {
+          none: causes.fetch(nil, []).size.to_f,
+          hot_weather: causes.fetch(:hot_weather, []).size.to_f,
+          cold_weather: causes.fetch(:cold_weather, []).size.to_f,
+          old_age: causes.fetch(:old_age, []).size.to_f,
+          starvation: causes.fetch(:starvation, []).size.to_f,
+          thirst: causes.fetch(:thirst, []).size.to_f
+        }
+      end
 
       def set_stock
         @food_stock = 0
