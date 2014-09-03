@@ -1,20 +1,7 @@
 require 'test_helper'
 
 describe Eco::Species do
-  class MockPot
-    attr_accessor :current_month, :inhabitants, :habitat
-
-    def add_inhabitant(iht)
-      (@inhabitants ||=[]).push(iht)
-    end
-
-    def current_month
-      0
-    end
-  end
-
-  let(:pot) { MockPot.new }
-  let(:habitat) { Eco::Habitat.new(pot, monthly_food: 5, monthly_water: 5, winter: 0) }
+  let(:habitat) { Eco::Habitat.new(monthly_food: 5, monthly_water: 5, winter: 0) }
   let(:habitat_attrs) { { monthly_food: 5, monthly_water: 5, winter: 0 } }
   let(:attrs) do
     {
@@ -92,7 +79,7 @@ describe Eco::Species do
 
     describe 'when the specie is exposed to too much cold' do
       let(:specie) { Eco::Species.new(attrs.merge(minimum_temperature: 0)) }
-      let(:habitat) { Eco::Habitat.new(pot, winter: -1000) }
+      let(:habitat) { Eco::Habitat.new(winter: -1000) }
 
       it 'dies' do
         specie.age!(habitat)
@@ -103,7 +90,7 @@ describe Eco::Species do
 
     describe 'when the specie is exposed to too much hot' do
       let(:specie) { Eco::Species.new(attrs.merge(maximum_temperature: 1)) }
-      let(:habitat) { Eco::Habitat.new(pot, winter: 10000) }
+      let(:habitat) { Eco::Habitat.new(winter: 10000) }
 
       it 'dies' do
         specie.age!(habitat)
@@ -115,7 +102,7 @@ describe Eco::Species do
 
     describe 'when the specie gets too old' do
       let(:specie) { Eco::Species.new(attrs.merge(life_span: 1)) }
-      let(:habitat) { Eco::Habitat.new(pot) }
+      let(:habitat) { Eco::Habitat.new }
 
       it 'dies' do
         specie.age!(habitat)

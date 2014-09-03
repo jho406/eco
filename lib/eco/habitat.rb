@@ -2,15 +2,13 @@ module Eco
   class Habitat
     MONTH_SEASONS = [:winter, :winter, :spring, :spring, :spring, :summer, :summer, :summer, :fall, :fall, :fall, :winter]
 
-    attr_reader :inhabitants, :passage_of_time, :temperature, :options
+    attr_reader :inhabitants, :temperature, :options
     attr_reader :food_stock, :water_stock
     attr_reader :age, :stats
 
-    def initialize(passage_of_time, opts = {})
+    def initialize(opts = {})
       @options = default_opts.merge(opts)
-      @inhabitants = options[:inhabitants].clone
-      @passage_of_time = passage_of_time
-
+      @inhabitants = opts.fetch(:inhabitants, [])
       @age = 0
       @stats = {}
       set_stock
@@ -54,6 +52,10 @@ module Eco
       age_inhabitants
     end
 
+    def current_month
+      @age%12
+    end
+
     def refresh_stats
       cause_of_deaths = extract_cause_of_death
       alive = cause_of_deaths.fetch(:none, 0)
@@ -73,8 +75,8 @@ module Eco
     private
 
       def extract_cause_of_death
-        causes = inhabitants.group_by do |iht|
-          iht.cause_of_death
+        causes = inhabitants.group_by do |obj|
+          obj.cause_of_death
         end
 
         {
@@ -93,7 +95,7 @@ module Eco
       end
 
       def set_temperature
-        month = @passage_of_time.current_month
+        month = current_month
         season = MONTH_SEASONS[month]
         base_temp = options[season]
 

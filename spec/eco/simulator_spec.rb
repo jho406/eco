@@ -65,9 +65,9 @@ describe Eco::Simulator do
       end
 
       it 'calculates the mortality rate' do
-        total = run1.all_inhabitants.size + run2.all_inhabitants.size
+        total = run1.inhabitants.size + run2.inhabitants.size
 
-        run1.all_inhabitants[0].stub :cause_of_death, :hot_weather do
+        run1.inhabitants[0].stub :cause_of_death, :hot_weather do
           run1.refresh_stats
           sim.refresh_stats
 
@@ -76,9 +76,9 @@ describe Eco::Simulator do
       end
 
       it 'calculates the hot weather death rate' do
-        total = run1.all_inhabitants.size + run2.all_inhabitants.size
+        total = run1.inhabitants.size + run2.inhabitants.size
 
-        run1.all_inhabitants[0].stub :cause_of_death, :hot_weather do
+        run1.inhabitants[0].stub :cause_of_death, :hot_weather do
           run1.refresh_stats
           sim.refresh_stats
 
@@ -87,9 +87,9 @@ describe Eco::Simulator do
       end
 
       it 'calculates the cold weather death rate' do
-        total = run1.all_inhabitants.size + run2.all_inhabitants.size
+        total = run1.inhabitants.size + run2.inhabitants.size
 
-        run1.all_inhabitants[0].stub :cause_of_death, :cold_weather do
+        run1.inhabitants[0].stub :cause_of_death, :cold_weather do
           run1.refresh_stats
           sim.refresh_stats
 
@@ -98,9 +98,9 @@ describe Eco::Simulator do
       end
 
       it 'calculates the starvation death rate' do
-        total = run1.all_inhabitants.size + run2.all_inhabitants.size
+        total = run1.inhabitants.size + run2.inhabitants.size
 
-        run1.all_inhabitants[0].stub :cause_of_death, :starvation do
+        run1.inhabitants[0].stub :cause_of_death, :starvation do
           run1.refresh_stats
           sim.refresh_stats
 
@@ -109,8 +109,8 @@ describe Eco::Simulator do
       end
 
       it 'calculates the thirst death rate' do
-        total = run1.all_inhabitants.size + run2.all_inhabitants.size
-        run1.all_inhabitants[0].stub :cause_of_death, :thirst do
+        total = run1.inhabitants.size + run2.inhabitants.size
+        run1.inhabitants[0].stub :cause_of_death, :thirst do
           run1.refresh_stats
           sim.refresh_stats
 
@@ -119,9 +119,9 @@ describe Eco::Simulator do
       end
 
       it 'calculates the old_age death rate' do
-        total = run1.all_inhabitants.size + run2.all_inhabitants.size
+        total = run1.inhabitants.size + run2.inhabitants.size
 
-        run1.all_inhabitants[0].stub :cause_of_death, :old_age do
+        run1.inhabitants[0].stub :cause_of_death, :old_age do
           run1.refresh_stats
           sim.refresh_stats
 

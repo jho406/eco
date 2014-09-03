@@ -15,15 +15,14 @@ module Eco
 
     def run
       @iterations.times do
-        pot = PassageOfTime.new(species_options: @specie_attrs, habitat_options: @habitat_attrs)
-        @months.times{ pot.age! }
-        pot.refresh_stats
-        @runs << pot
+        habitat = habitat_with_adam_eve
+        @months.times { habitat.age! }
+        habitat.refresh_stats
+        @runs << habitat
       end
 
       refresh_stats
     end
-
 
     def refresh_stats
       @stats = {
@@ -42,9 +41,16 @@ module Eco
     end
 
     private
+      def habitat_with_adam_eve
+        adam = Species.new(@specie_attrs.merge(sex: :m))
+        eve = Species.new(@specie_attrs.merge(sex: :f))
+        Habitat.new(@habitat_attrs.merge(inhabitants: [adam, eve]))
+      end
+
+
       def extract_doa_population
-        total_dead = runs.inject(0) do |memo, pot|
-          memo += pot.all_inhabitants.size
+        total_dead = runs.inject(0) do |memo, habitat|
+          memo += habitat.inhabitants.size
         end
       end
 
@@ -53,23 +59,23 @@ module Eco
       end
 
       def extract_max_population
-        runs.map do |pot|
-          pot.stats[:population]
+        runs.map do |habitat|
+          habitat.stats[:population]
         end.max
       end
 
       def extract_rate(type)
         type = type.to_sym
-        total_dead = runs.inject(0) do |memo, pot|
-          memo += pot.stats[type]
+        total_dead = runs.inject(0) do |memo, habitat|
+          memo += habitat.stats[type]
         end
 
         (total_dead.to_f / extract_doa_population) * 100
       end
 
       def extract_population
-        runs.inject(0) do |memo, pot|
-          memo += pot.stats[:population]
+        runs.inject(0) do |memo, habitat|
+          memo += habitat.stats[:population]
         end
       end
   end

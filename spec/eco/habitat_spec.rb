@@ -6,16 +6,6 @@ describe Eco::Habitat do
     attr_accessor :cause_of_death
   end
 
-  let(:pot) do
-    Class.new(Eco::PassageOfTime) do
-      attr_accessor :snapshots, :all_inhabitants, :current_month
-
-      def all_inhabitants
-        @all_inhabitants
-      end
-    end.new
-  end
-
   let(:specie) { MockSpecies.new }
   let(:specie_attrs) do
     {
@@ -33,7 +23,7 @@ describe Eco::Habitat do
   end
 
   let(:attrs) { { monthly_food: 5, monthly_water: 5, winter: 0 } }
-  let(:habitat) { Eco::Habitat.new(pot, attrs) }
+  let(:habitat) { Eco::Habitat.new(attrs) }
 
   describe '#clone' do
     it 'also shallow copies its inhabitants' do
@@ -51,7 +41,7 @@ describe Eco::Habitat do
   end
 
   describe '#replenish' do
-    let(:habitat) { Eco::Habitat.new(pot, monthly_food: 100, monthly_water: 50) }
+    let(:habitat) { Eco::Habitat.new(monthly_food: 100, monthly_water: 50) }
 
     it 'adds to the habitat food supply' do
       habitat.replenish
@@ -62,7 +52,7 @@ describe Eco::Habitat do
   end
 
   describe '#provision_food' do
-    let(:habitat) { Eco::Habitat.new(pot, attrs.merge({ monthly_food: 10 })) }
+    let(:habitat) { Eco::Habitat.new(attrs.merge({ monthly_food: 10 })) }
 
     before do
       habitat.replenish
@@ -84,7 +74,7 @@ describe Eco::Habitat do
   end
 
   describe '#provision_water' do
-    let(:habitat) { Eco::Habitat.new(pot, { monthly_water: 10 }) }
+    let(:habitat) { Eco::Habitat.new(monthly_water: 10) }
 
     before do
       habitat.replenish
@@ -106,7 +96,7 @@ describe Eco::Habitat do
   end
 
   describe '#healthy?' do
-    let(:habitat) { Eco::Habitat.new(pot, monthly_food: 10, monthly_water: 10 ) }
+    let(:habitat) { Eco::Habitat.new(monthly_food: 10, monthly_water: 10 ) }
     let(:specie_attrs) { { monthly_water_consumption: 5, monthly_food_consumption: 5 } }
 
     describe 'when there is enough food and water to go around' do
@@ -136,7 +126,7 @@ describe Eco::Habitat do
   end
 
   describe '#age!' do
-    let(:habitat) { Eco::Habitat.new(pot, attrs.merge({ winter: 50, monthly_water: 15, monthly_food: 10 })) }
+    let(:habitat) { Eco::Habitat.new(attrs.merge({ winter: 50, monthly_water: 15, monthly_food: 10 })) }
     let(:male) { MockSpecies.new(specie_attrs.merge(sex: :m)) }
     let(:female) { MockSpecies.new(specie_attrs.merge(sex: :f)) }
     let(:other_female) { MockSpecies.new(specie_attrs.merge(sex: :f)) }
@@ -171,6 +161,71 @@ describe Eco::Habitat do
       habitat.age!
       (female.pregnant? || other_female.pregnant?).must_equal true
       (female.pregnant? && other_female.pregnant?).must_equal false
+    end
+  end
+
+  describe '#stats' do
+    it 'returns the number of population(alive)' do
+      habitat.add_inhabitant(OpenStruct.new(dead?: true, cause_of_death: :hot_weather))
+      habitat.add_inhabitant(OpenStruct.new(dead?: true, cause_of_death: :hot_weather))
+      habitat.add_inhabitant(OpenStruct.new(dead?: false, cause_of_death: nil))
+
+      habitat.refresh_stats
+      habitat.stats[:population].must_equal 1
+    end
+
+    it 'returns the number of dead' do
+      habitat.add_inhabitant(OpenStruct.new(dead?: true, cause_of_death: :hot_weather))
+      habitat.add_inhabitant(OpenStruct.new(dead?: true, cause_of_death: :hot_weather))
+      habitat.add_inhabitant(OpenStruct.new(dead?: false))
+
+      habitat.refresh_stats
+      habitat.stats[:dead].must_equal 2
+    end
+
+    it 'returns the hot weather death' do
+      habitat.add_inhabitant(OpenStruct.new(dead?: true, cause_of_death: :hot_weather))
+      habitat.add_inhabitant(OpenStruct.new(dead?: true, cause_of_death: :hot_weather))
+      habitat.add_inhabitant(OpenStruct.new(dead?: false))
+
+      habitat.refresh_stats
+      habitat.stats[:dead_by_hot_weather].must_equal 2
+    end
+
+    it 'returns the cold weather death' do
+      habitat.add_inhabitant(OpenStruct.new(dead?: true, cause_of_death: :cold_weather))
+      habitat.add_inhabitant(OpenStruct.new(dead?: true, cause_of_death: :cold_weather))
+      habitat.add_inhabitant(OpenStruct.new(dead?: false))
+
+      habitat.refresh_stats
+      habitat.stats[:dead_by_cold_weather].must_equal 2
+    end
+
+    it 'returns the old age death' do
+      habitat.add_inhabitant(OpenStruct.new(dead?: true, cause_of_death: :old_age))
+      habitat.add_inhabitant(OpenStruct.new(dead?: true, cause_of_death: :old_age))
+      habitat.add_inhabitant(OpenStruct.new(dead?: false))
+
+      habitat.refresh_stats
+      habitat.stats[:dead_by_old_age].must_equal 2
+    end
+
+    it 'returns the starvation death' do
+      habitat.add_inhabitant(OpenStruct.new(dead?: true, cause_of_death: :starvation))
+      habitat.add_inhabitant(OpenStruct.new(dead?: true, cause_of_death: :starvation))
+      habitat.add_inhabitant(OpenStruct.new(dead?: false))
+
+      habitat.refresh_stats
+      habitat.stats[:dead_by_starvation].must_equal 2
+    end
+
+    it 'returns the thirst death' do
+      habitat.add_inhabitant(OpenStruct.new(dead?: true, cause_of_death: :thirst))
+      habitat.add_inhabitant(OpenStruct.new(dead?: true, cause_of_death: :thirst))
+      habitat.add_inhabitant(OpenStruct.new(dead?: false))
+
+      habitat.refresh_stats
+      habitat.stats[:dead_by_thirst].must_equal 2
     end
   end
 end
